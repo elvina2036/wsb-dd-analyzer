@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reddit Ticker Extractor</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <h1>📈 Reddit DD Post Ticker Extractor</h1>
+
+  <div class="controls">
+    <label for="timeRange">Search posts from:</label>
+    <select id="timeRange">
+      <option value="1">Last 24 hours</option>
+      <option value="3">Last 3 days</option>
+      <option value="7">Last 7 days</option>
+      <option value="30">Last 30 days</option>
+      <option value="60">Last 2 months</option>
+    </select>
+    <button id="fetchBtn">📥 Fetch Reddit Posts</button>
+    <div id="status" class="status hidden">⏳ Fetching...</div>
+  </div>
+
+  <table id="results">
+    <thead>
+      <tr>
+        <th>Ticker(s) & Title</th>
+        <th>Posted At</th>
+      </tr>
+    </thead>
+    <tbody></tbody>
+  </table>
+
+  <script src="main.js"></script>
+</body>
+</html>
