@@ -47,8 +47,12 @@ function searchTickerByCompanyName(title) {
     for (const company of companyList) {
       const normName = normalize(company.name);
       const nameWords = normName.split(/\s|-/);
-      if (nameWords.some(word => word === phrase)) return company.symbol;
-      if (normName.includes(phrase)) return company.symbol;
+      if (nameWords.some(word => word === phrase)) {
+        return company.symbol;
+      }
+      if (normName.includes(phrase)) {
+        return company.symbol;
+      }
     }
   }
   return null;
@@ -60,19 +64,15 @@ function extractTickerSymbols(title) {
 }
 
 async function loadCompanyListFromSheet() {
-  const sheetId = '1X8aBiGCBL5rHvToZiZqMiLdEfMWTuvZT5NwuITWdqKo'; // your sheet
-  // target the Symbols sheet via 'tq' (SQL-like) to only return the columns we need
-  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&tq=${encodeURIComponent('select A,B')}&sheet=Symbols`;
+  const webAppUrl = 'https://script.google.com/macros/s/AKfycbxK4MGPHLE6JsucpV5mw6Fajy5OoVJlOqFD6y1sTMcMR6OyHG5GJrP6hyF9WPgtAZZ5Gg/exec';
+  const res = await fetch(`${webAppUrl}?sheet=Symbols`); // or &includeEmpty=true
+  if (!res.ok) throw new Error(`HTTP ${res.status}`);
+  const json = await res.json();
 
-  const res = await fetch(url);
-  const text = await res.text();
-  const json = JSON.parse(text.substr(47).slice(0, -2));
-
-  const rows = json.table.rows || [];
-  // Rows: [ [symbol, name], ... ]
-  companyList = rows
-    .map(r => ({ symbol: r.c[0]?.v, name: r.c[1]?.v }))
-    .filter(x => x.symbol && x.name);
+  // [{symbol, name}, ...]
+  const all = json.rows || [];
+  // If you only want rows with a symbol:
+  companyList = all.filter(x => x.symbol && x.symbol.trim());
 }
 
 function formatTimestamp(unix) {
@@ -110,7 +110,7 @@ async function fetchDDPostsFromSheet(daysBack = 1) {
     return {
       id: obj.id ?? null,
       title: obj.title ?? '',
-      url: obj.permalink ? obj.permalink : obj.url,
+      url: obj.permalink ? 'https://www.reddit.com' + obj.permalink : obj.url,
       created_utc: createdUtc,
       raw: obj, // keep the whole row if you need more later
     };
