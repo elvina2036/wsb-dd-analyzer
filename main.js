@@ -59,14 +59,20 @@ function extractTickerSymbols(title) {
   return matches || [];
 }
 
-async function loadCompanyListFromCSV() {
-  const res = await fetch('./nasdaq_screener.csv');
+async function loadCompanyListFromSheet() {
+  const sheetId = '1X8aBiGCBL5rHvToZiZqMiLdEfMWTuvZT5NwuITWdqKo'; // your sheet
+  // target the Symbols sheet via 'tq' (SQL-like) to only return the columns we need
+  const url = `https://docs.google.com/spreadsheets/d/${sheetId}/gviz/tq?tqx=out:json&tq=${encodeURIComponent('select A,B')}&sheet=Symbols`;
+
+  const res = await fetch(url);
   const text = await res.text();
-  const lines = text.split('\n').slice(1);
-  companyList = lines.map(line => {
-    const [symbol, name] = line.split(',').map(s => s?.trim());
-    return { symbol, name };
-  }).filter(entry => entry.symbol && entry.name);
+  const json = JSON.parse(text.substr(47).slice(0, -2));
+
+  const rows = json.table.rows || [];
+  // Rows: [ [symbol, name], ... ]
+  companyList = rows
+    .map(r => ({ symbol: r.c[0]?.v, name: r.c[1]?.v }))
+    .filter(x => x.symbol && x.name);
 }
 
 function formatTimestamp(unix) {
@@ -151,7 +157,7 @@ async function handleFetchClick() {
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-  await loadCompanyListFromCSV();
+  await loadCompanyListFromSheet();
   document.getElementById('fetchBtn').addEventListener('click', handleFetchClick);
 });
 
