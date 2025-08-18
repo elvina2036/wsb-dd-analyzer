@@ -25,7 +25,7 @@ var Config = {
       'id','author','title','post_content','direction','ticker','created_at','price_at_post'
     ],
     FRONTEND_LIVE: [
-      'id','ticker','ups','downs','num_comments','direction','created_at','price_at_post','cap_in_bi'
+      'id','ticker','ups','downs','num_comments','cap_in_bi'
     ],
     TICKER_CACHE: ['ticker','last_refreshed','date','open','high','low','close','volume'],
     LOG: ['type','time','message','detail'],
