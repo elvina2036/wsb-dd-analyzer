@@ -23,8 +23,8 @@ const FEFixed = (() => {
     const dst = ensureFE_(ss);
 
     // source header + index
-    const srcHdr = Config.readHeader(src);
-    const S = Config.indexFor(srcHdr);
+    const srcHdr = safeHeader_(src);
+    const S = indexFor_(srcHdr);
 
     // read all source rows
     const srcLastRow = src.getLastRow();
@@ -34,8 +34,8 @@ const FEFixed = (() => {
       : [];
 
     // dest existing ids
-    const dstHdr = Config.readHeader(dst);
-    const D = Config.indexFor(dstHdr);
+    const dstHdr = safeHeader_(dst);
+    const D = indexFor_(dstHdr);
     const idColDst = D['id'];
     const existing = new Set();
     const dstLastRow = dst.getLastRow();
@@ -82,7 +82,7 @@ const FEFixed = (() => {
     }
 
     // format created_at + sort newest
-    const H = Config.indexFor(Config.readHeader(dst));
+    const H = indexFor_(safeHeader_(dst));
     if (H['created_at'] != null) {
       const col = H['created_at'] + 1;
       const rows = Math.max(0, dst.getLastRow() - 1);
@@ -353,6 +353,14 @@ const FEFixed = (() => {
       if (k) m[k] = i;
     }
     return m;
+  }
+
+  function safeHeader_(sh) {
+    if (!sh) return [];
+    const lc = sh.getLastColumn();
+    if (!lc) return [];
+    const vals = sh.getRange(1, 1, 1, lc).getValues()[0] || [];
+    return vals.map(x => (x || '').toString().trim());
   }
 
   return { syncFromPosts, fillDirections, fillTickers, fillPricesAtPost };
