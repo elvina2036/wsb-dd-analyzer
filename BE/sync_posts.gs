@@ -1,5 +1,3 @@
-/** ===================== sync_posts.gs (DROP-IN) ===================== **/
-
 const Posts = (() => {
   const SHEET_NAME = Config.SHEETS.POSTS;
   const HEADERS    = Config.HEADERS.POSTS;

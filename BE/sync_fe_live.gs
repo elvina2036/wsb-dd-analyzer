@@ -1,15 +1,11 @@
-/** ===================== sync_fe_live.gs (DROP-IN, ups/downs + cap in billions) ===================== **/
 const FELive = (() => {
   const SRC_POSTS = Config.SHEETS.POSTS;
   const SRC_FIXED = Config.SHEETS.FRONTEND_FIXED;
   const DST_LIVE  = Config.SHEETS.FRONTEND_LIVE;
   const SYM_SHEET = Config.SHEETS.SYMBOLS;
-
-  // Expect these headers from _config.gs
-  // FRONTEND_LIVE should contain at least: ['id','ticker','ups','downs','num_comments','cap_in_bi', ...]
   const LIVE_HDR  = Config.HEADERS.FRONTEND_LIVE;
-  const FIXED_HDR = Config.HEADERS.FRONTEND_FIXED;  // ['id','author','title','post_content','direction','ticker','created_at','price_at_post']
-  const SYM_HDR   = Config.HEADERS.SYMBOLS;         // ['symbol','name','exchange','cap_in_bi']
+  const FIXED_HDR = Config.HEADERS.FRONTEND_FIXED;
+  const SYM_HDR   = Config.HEADERS.SYMBOLS;
 
   // Finnhub conf (for cap lookups)
   const FH_BASE = (Config.API && Config.API.FINNHUB_BASE) ? Config.API.FINNHUB_BASE : 'https://finnhub.io/api/v1';
@@ -67,7 +63,6 @@ const FELive = (() => {
 
       if (cap !== '' && cap != null && !isNaN(Number(cap))) {
         let capNum = Number(cap);
-        // If looks like millions, convert to billions and queue a writeback
         if (capNum > 1000) {
           const bi = capNum / 1000;
           capByTicker.set(sym, bi);

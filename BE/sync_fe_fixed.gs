@@ -1,10 +1,8 @@
-/** ===================== sync_fe_fixed.gs (DROP-IN) ===================== **/
 const FEFixed = (() => {
   const SRC_SHEET = Config.SHEETS.POSTS;
   const DST_SHEET = Config.SHEETS.FRONTEND_FIXED;
-  const DST_HDR   = Config.HEADERS.FRONTEND_FIXED; // ['id','author','title','post_content','direction','ticker','created_at','price_at_post']
+  const DST_HDR   = Config.HEADERS.FRONTEND_FIXED;
 
-  /* ---------- bootstrapping ---------- */
   function ensureFE_(ss) {
     if (Utils && Utils.Sheets && typeof Utils.Sheets.ensureSheet === 'function') {
       return Utils.Sheets.ensureSheet(ss, DST_SHEET, DST_HDR);
@@ -95,7 +93,7 @@ const FEFixed = (() => {
     SpreadsheetApp.getActive().toast(`FE Fixed: appended ${out.length} new row(s)`, 'WSB', 3);
   }
 
-  /* ==================== 2) Fill E:direction (uses your classifier) ==================== */
+  /* ==================== 2) Fill E:direction (uses utils_direction_classifier) ==================== */
   function fillDirections(options) {
     options = options || {};
     const force = !!options.force;
@@ -156,7 +154,7 @@ const FEFixed = (() => {
     return k;
   }
 
-  /* ==================== 3) Fill F:ticker (uses your utils_ticker_extractor) ==================== */
+  /* ==================== 3) Fill F:ticker (uses utils_ticker_extractor) ==================== */
   function fillTickers(options) {
     options = options || {};
     const force = !!options.force;
@@ -253,10 +251,6 @@ const FEFixed = (() => {
   }
 
   /* ==================== 4) Fill H:price_at_post (previous trading day) ==================== */
-  /**
-   * For each FE row, set price_at_post = close from ticker_cache for the most recent
-   * cached trading day strictly BEFORE created_at. Fills blanks by default; force=true overwrites.
-   */
   function fillPricesAtPost(options) {
     options = options || {};
     const force = !!options.force;

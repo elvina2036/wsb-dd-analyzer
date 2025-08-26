@@ -1,5 +1,3 @@
-/** ===================== sync_ticker_cache_fmp_dropin.gs ===================== */
-
 const SYNC_OPTIONS = { DRY_RUN: false, DO_SORT: true };
 const INSERT_GUARDS = {
   REQUIRE_MARKET_CLOSED: true,
@@ -168,6 +166,11 @@ function insertDailyRowsFromFmp_(symbols) {
 }
 
 /* ===================== New tickers (AV history) ===================== */
+function getAvApiKey_() {
+  const key = PropertiesService.getScriptProperties().getProperty('ALPHA_VANTAGE_KEY');
+  if (!key) throw new Error('ALPHA_VANTAGE_KEY not set in Script Properties.');
+  return key;
+}
 
 function importNewTickersHistoryWithAV_(symbols) {
   const loader = resolveAvHistoryLoader_() || avFallbackHistoryLoader_;
@@ -200,13 +203,6 @@ function resolveAvHistoryLoader_() {
 }
 
 /* ------- Built-in AV fallback (used only if your own loader isn’t found) ------- */
-
-function getAvApiKey_() {
-  const key = PropertiesService.getScriptProperties().getProperty('ALPHA_VANTAGE_KEY');
-  if (!key) throw new Error('ALPHA_VANTAGE_KEY not set in Script Properties.');
-  return key;
-}
-
 function fetchAvDailySeries_(symbol, adjusted, outputsize) {
   const key = getAvApiKey_();
   const fn  = adjusted ? 'TIME_SERIES_DAILY_ADJUSTED' : 'TIME_SERIES_DAILY';
@@ -321,7 +317,6 @@ function sortTickerCache_() {
 }
 
 /* ===================== Sheet helpers ===================== */
-
 function getSheet_(name) {
   const ss = SpreadsheetApp.getActiveSpreadsheet();
   const sh = ss.getSheetByName(name);
@@ -359,7 +354,6 @@ function getFeFixedSymbols_() {
 }
 
 /* ===================== Index & utils ===================== */
-
 function buildExistingDatesIndex_(sheet, colTicker, colDate) {
   const lastRow = sheet.getLastRow();
   const rowCount = Math.max(0, lastRow - 1);
@@ -391,7 +385,6 @@ function toNum_(v) { if (v === null || v === undefined || v === '') return NaN; 
 function chunk_(arr, size) { const out = []; for (let i = 0; i < arr.length; i += size) out.push(arr.slice(i, i + size)); return out; }
 
 /* ===================== Deduper ===================== */
-
 const DEDUPE_OPTIONS = { DRY_RUN: false, MARKET_TZ: 'America/New_York' };
 
 function dedupe_today_only() {
@@ -446,75 +439,3 @@ function _dedupe_by_date_(yyyy_mm_dd) {
   console.log(`[DEDUP] Deleted ${toDelete.length} duplicate rows.`);
   if (SYNC_OPTIONS && SYNC_OPTIONS.DO_SORT) sortTickerCache_();
 }
-
-
-/* ===================== AV DEBUG (no writes) ===================== */
-
-// Try ADJUSTED first; if blocked, try DAILY. Prints what works + sample rows.
-function debugAvAuto(symbol, outputsize) {
-  symbol = String(symbol || 'SBET').trim(); if (!symbol) return;
-  outputsize = (outputsize || 'compact').toLowerCase() === 'full' ? 'full' : 'compact';
-
-  const adj = fetchAv_('TIME_SERIES_DAILY_ADJUSTED', symbol, outputsize);
-  if (adj.ok) { dumpAvSeries_(symbol, adj.series, 'ADJUSTED'); return; }
-  console.log(`[AV DEBUG] ${symbol} ADJUSTED failed -> ${adj.why}`);
-
-  const std = fetchAv_('TIME_SERIES_DAILY', symbol, outputsize);
-  if (std.ok) { dumpAvSeries_(symbol, std.series, 'DAILY'); return; }
-  console.log(`[AV DEBUG] ${symbol} DAILY failed -> ${std.why}`);
-}
-
-// Quick probe: tells you which endpoint is available.
-function debugAvTryBoth(symbol) {
-  symbol = String(symbol || 'SBET').trim(); if (!symbol) return;
-  const a = fetchAv_('TIME_SERIES_DAILY_ADJUSTED', symbol, 'compact');
-  console.log(`[AV DEBUG] ${symbol} ADJUSTED -> ${a.ok ? 'OK' : a.why}`);
-  if (!a.ok) {
-    const b = fetchAv_('TIME_SERIES_DAILY', symbol, 'compact');
-    console.log(`[AV DEBUG] ${symbol} DAILY    -> ${b.ok ? 'OK' : b.why}`);
-  }
-}
-
-// Low-level fetcher used by the two functions above.
-function fetchAv_(fn, symbol, outputsize) {
-  const key = getAvApiKey_(); // uses your existing helper
-  const url = `https://www.alphavantage.co/query?function=${fn}&symbol=${encodeURIComponent(symbol)}&outputsize=${outputsize}&apikey=${encodeURIComponent(key)}`;
-  let code = 0, text = '';
-  try {
-    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
-    code = res.getResponseCode();
-    text = res.getContentText() || '';
-  } catch (e) {
-    return { ok:false, why:`fetch error: ${e && e.message ? e.message : e}` };
-  }
-
-  let json;
-  try { json = JSON.parse(text); } catch (e) {
-    return { ok:false, why:`parse error: ${e && e.message ? e.message : e}` };
-  }
-
-  if (json.Note)          return { ok:false, why:`Note: ${json.Note}` };
-  if (json.Information)   return { ok:false, why:`Information: ${json.Information}` };
-  if (json['Error Message']) return { ok:false, why:`Error: ${json['Error Message']}` };
-
-  const series = json['Time Series (Daily)'];
-  if (!series || typeof series !== 'object') return { ok:false, why:'missing daily series' };
-
-  return { ok:true, series };
-}
-
-// Pretty-print last few rows so you can eyeball values.
-function dumpAvSeries_(symbol, series, label) {
-  const dates = Object.keys(series).sort(); // ascending
-  console.log(`[AV DEBUG] ${symbol} using ${label}; days=${dates.length}`);
-  const head = dates.slice(0, 2);
-  const tail = dates.slice(-3);
-  const show = (d) => {
-    const r = series[d] || {};
-    console.log(`${symbol} ${d}  O:${r['1. open']} H:${r['2. high']} L:${r['3. low']} C:${r['4. close']} V:${r['6. volume'] ?? r['5. volume']}`);
-  };
-  head.forEach(show);
-  console.log('...');
-  tail.forEach(show);
-}
-

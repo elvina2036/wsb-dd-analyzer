@@ -1,7 +1,4 @@
-/** ===================== _config.gs (DROP-IN) ===================== **/
-
 var Config = {
-  /* ---------- Sheets ---------- */
   SHEETS: {
     SYMBOLS:        'symbols',
     POSTS:          'posts',
@@ -11,7 +8,6 @@ var Config = {
     LOG:            'logger'
   },
 
-  /* ---------- Canonical headers ---------- */
   HEADERS: {
     SYMBOLS: ['symbol','name','exchange','cap_in_bi'],
     POSTS: ['id','title','author','created_utc','created','score','upvote_ratio','selftext','num_comments','permalink','url','flair','over_18','stickied','is_video','is_self','subreddit','author_fullname','total_awards_received','num_crossposts','thumbnail'],
@@ -21,7 +17,6 @@ var Config = {
     LOG: ['type','time','message','detail']
   },
 
-  /* ---------- API bases / keys (keys resolved inside functions) ---------- */
   API: {
     FINNHUB_BASE: 'https://finnhub.io/api/v1',
     ALPHA_VANTAGE_BASE: 'https://www.alphavantage.co/query',
@@ -31,7 +26,6 @@ var Config = {
     FMP_KEY: 'FMP_KEY'
   },
 
-  /* ---------- Job settings (centralized constants) ---------- */
   POSTS: {
     QUERY:        'flair:"DD"',
     SUBREDDIT:    'wallstreetbets',
@@ -40,12 +34,12 @@ var Config = {
     MAX_PAGES:    10,
     CUTOFF_DAYS:  7
   },
+
   SYMBOLS: {
     NASDAQ_LISTED_URL: 'https://www.nasdaqtrader.com/dynamic/symdir/nasdaqlisted.txt',
     OTHER_LISTED_URL:  'https://www.nasdaqtrader.com/dynamic/symdir/otherlisted.txt'
   },
 
-  /* ---------- small helper to read script properties (safe) ---------- */
   getApiKey: function(propName) {
     var props = PropertiesService.getScriptProperties();
     var v = null;

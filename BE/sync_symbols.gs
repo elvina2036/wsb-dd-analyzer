@@ -1,5 +1,3 @@
-/** ===================== sync_symbols.gs (DROP-IN) ===================== **/
-
 const Symbols = (() => {
   const SHEET_NAME = Config.SHEETS.SYMBOLS;
   const HEADERS    = Config.HEADERS.SYMBOLS;
@@ -22,7 +20,6 @@ const Symbols = (() => {
       out.push({ symbol: symbol, name: name, exchange: 'NASDAQ', cap_in_bi: '' });
     }
     return out;
-    // cap_in_bi left blank; you can fill it via another job later
   }
 
   function parseOther_(txt) {
@@ -46,13 +43,9 @@ const Symbols = (() => {
 
   function fetchAndWrite() {
     const sh = init_();
-
     const nasdaqTxt = fetchNasdaqListed_();
     const otherTxt  = fetchOtherListed_();
-
     const rows = parseNasdaq_(nasdaqTxt).concat(parseOther_(otherTxt));
-
-    // de-dup by symbol
     const seen = new Set();
     const dedup = [];
     for (const r of rows) {
@@ -62,8 +55,6 @@ const Symbols = (() => {
     }
 
     const data = dedup.map(obj => Utils.Sheets.toRowArray(HEADERS, obj));
-
-    // replace-all data region (keep header)
     const last = sh.getLastRow();
     if (last > 1) sh.getRange(2,1,last-1,sh.getLastColumn()).clearContent();
     if (data.length) sh.getRange(2,1,data.length,HEADERS.length).setValues(data);

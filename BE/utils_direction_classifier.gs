@@ -1,12 +1,4 @@
-/** ===================== utils_direction_classifier.gs (DROP-IN) ===================== **
- * Rule-based "Bull"/"Bear" classifier for WSB posts.
- * Primary API:    Direction.classify(title, body, { upvote_ratio }) -> 'Bull' | 'Bear'
- * Compatibility:  detectDirection(...) / classifyDirection(...) / DirectionClassifier.classify(...)
- *                 / UtilsDirection.classify(...) all delegate to Direction.classify
- */
-
 const Direction = (() => {
-  // --- helpers ---------------------------------------------------------
   function clean(text) {
     if (!text) return '';
     let s = String(text);
@@ -27,7 +19,6 @@ const Direction = (() => {
            /little to no[^.]{0,30}dilution/i.test(s);
   }
 
-  // --- dictionaries ----------------------------------------------------
   const POS_GENERIC = [
     /(^|\W)long(\W|$)/, /(^|\W)bull(ish)?(\W|$)/, /(^|\W)buy(ing)?(\W|$)/,
     /(^|\W)call(s| option|s option)?(\W|$)/, /price\s*target|(^|\W)pt(\W|$)/,
@@ -73,7 +64,6 @@ const Direction = (() => {
 
   const POS_POSITION = [ /position:\s*\d+(\,\d{3})*\s*share/i ];
 
-  // --- scoring ---------------------------------------------------------
   function scoreSection(text, weight, isTitle) {
     if (!text) return 0;
     weight = weight || 1;
@@ -125,14 +115,9 @@ const Direction = (() => {
   return { classify };
 })();
 
-/* ---- Compatibility exports (thin adapters so callers can find the classifier) ---- */
-
-// 1) Function form: detectDirection / classifyDirection (2-arg or 1-arg)
 function detectDirection(title, bodyOrMeta, maybeMeta) {
-  // support detectDirection(title, body) or detectDirection(title, body, meta)
   var body = bodyOrMeta;
   var meta = maybeMeta || {};
-  // also support detectDirection(combinedString)
   if (body === undefined && typeof title === 'string') {
     body = '';
   }
@@ -142,12 +127,12 @@ function classifyDirection(title, bodyOrMeta, maybeMeta) {
   return detectDirection(title, bodyOrMeta, maybeMeta);
 }
 
-// 2) Object form: DirectionClassifier.classify / UtilsDirection.classify
 var DirectionClassifier = {
   classify: function(title, body, meta) {
     return Direction.classify(title, body, meta || {});
   }
 };
+
 var UtilsDirection = {
   classify: function(title, body, meta) {
     return Direction.classify(title, body, meta || {});

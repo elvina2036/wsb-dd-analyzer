@@ -1,15 +1,9 @@
-/** ===================== utils_sheets.gs (DROP-IN) ===================== **/
-
 var Utils = (function() {
-
-  /* ---------- Simple value helpers ---------- */
   var Val = {
     str:     function(v){ return (v == null) ? '' : ('' + v).trim(); },
     isBlank: function(v){ return v === '' || v === null || v === undefined; },
     oneline: function(s){ return s == null ? '' : String(s).replace(/\r?\n/g, ' '); }
   };
-
-  /* ---------- Logging (to Config.SHEETS.LOG) ---------- */
   var Log = {
     append: function(type, message, detail) {
       var ss = SpreadsheetApp.getActive();
@@ -18,8 +12,6 @@ var Utils = (function() {
       sh.appendRow(row);
     }
   };
-
-  /* ---------- Mappers (data shaping lives here) ---------- */
   var Mappers = {
     mapRedditPostToRowObj: function(d) {
       var createdUtc  = Number(d.created_utc || d.created || 0);
@@ -52,8 +44,6 @@ var Utils = (function() {
       };
     }
   };
-
-  /* ---------- Sheets helpers ---------- */
   var Sheets = {
     ensureSheet: function(ss, name, header) {
       var sh = ss.getSheetByName(name) || ss.insertSheet(name);
@@ -101,20 +91,16 @@ var Utils = (function() {
       sh.getRange(2,1,rows,sh.getLastColumn()).sort([{column: col, ascending: !!opts.ascending}]);
     }
   };
-
   return { Sheets: Sheets, Val: Val, Mappers: Mappers, Log: Log };
 })();
 
-/* ---------- Final formatting helper (global) ---------- */
 function fixRowFormat(sheet, height) {
   height = height || 21;
   SpreadsheetApp.flush();
   try { var filter = sheet.getFilter(); if (filter) filter.remove(); } catch(_) {}
-
   var lastRow = sheet.getLastRow();
   var lastCol = sheet.getLastColumn();
   if (lastRow <= 1 || lastCol === 0) return;
-
   var rng = sheet.getRange(1,1,lastRow,lastCol);
   try { rng.setWrap(false); } catch(_) {}
   try { rng.setWrapStrategy(SpreadsheetApp.WrapStrategy.CLIP); } catch(_) {}
@@ -125,29 +111,21 @@ function fixRowFormat(sheet, height) {
   SpreadsheetApp.flush();
 }
 
-/**
- * Estimate [ups, downs] from score (net = ups - downs) and upvote_ratio (~ ups / (ups+downs)).
- * Returns [null, null] when ratio ~ 0.5 or inputs are invalid.
- */
 function estimateVotesFromScoreRatio(score, ratio) {
   var S = Number(score);
   var R = Number(ratio);
   if (!isFinite(S) || !isFinite(R)) return [null, null];
   if (R <= 0) return [0, Math.max(0, Math.round(-S))];
   if (R >= 1) return [Math.max(0, Math.round(S)), 0];
-
-  var denom = 2 * R - 1;               // from: S = (2R - 1) * T
-  if (Math.abs(denom) < 1e-6) return [null, null]; // ratio ~ 0.5 → indeterminate
-
-  var T = S / denom;                    // total votes (approx)
+  var denom = 2 * R - 1;               
+  if (Math.abs(denom) < 1e-6) return [null, null]; 
+  var T = S / denom;                    
   if (!isFinite(T) || T < 0) return [null, null];
-
-  var U = Math.round(R * T);            // ups ≈ R * T
-  var D = U - S;                        // ensure U - D = S exactly
-  if (D < 0) {                          // clamp if rounding pushed negative
+  var U = Math.round(R * T);            
+  var D = U - S;                        
+  if (D < 0) {                          
     D = 0;
     U = Math.max(0, Math.round(S));
   }
   return [U, Math.round(D)];
 }
-
