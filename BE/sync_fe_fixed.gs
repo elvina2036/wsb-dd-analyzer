@@ -90,7 +90,7 @@ const FEFixed = (() => {
       }
     }
     fixRowFormat(dst, 21);
-    SpreadsheetApp.getActive().toast(`FE Fixed: appended ${out.length} new row(s)`, 'WSB', 3);
+    Utils.Log.append('info', `FE Fixed: appended ${out.length} new row(s)`, JSON.stringify({added: out.length}));
   }
 
   /* ==================== 2) Fill E:direction (uses utils_direction_classifier) ==================== */
@@ -142,7 +142,7 @@ const FEFixed = (() => {
 
     sh.getRange(2, colDir, out.length, 1).setValues(out);
     fixRowFormat(sh, 21);
-    SpreadsheetApp.getActive().toast('FE Fixed: directions updated', 'WSB', 3);
+    Utils.Log.append('info', 'FE Fixed: FE Fixed: directions updated', '');
   }
 
   function normalizeDirection_(s) {
@@ -203,7 +203,7 @@ const FEFixed = (() => {
 
     sh.getRange(2, colTicker, out.length, 1).setValues(out);
     fixRowFormat(sh, 21);
-    SpreadsheetApp.getActive().toast('FE Fixed: tickers updated', 'WSB', 3);
+    Utils.Log.append('info', 'FE Fixed: FE Fixed: tickers updated', '');
   }
 
   function resolveTickerExtractor_(symIdx) {
@@ -308,7 +308,7 @@ const FEFixed = (() => {
     fe.getRange(2, colPrice, out.length, 1).setValues(out);
     fe.getRange(2, colPrice, Math.max(0, lastRow - 1), 1).setNumberFormat('0.00');
     fixRowFormat(fe, 21);
-    SpreadsheetApp.getActive().toast('FE Fixed: price_at_post updated', 'WSB', 3);
+    Utils.Log.append('info', 'FE Fixed: FE Fixed: price_at_post updated', '');
   }
 
   // Return "TICKER|YYYY-MM-DD" for the most recent cached trading day strictly BEFORE 'created'

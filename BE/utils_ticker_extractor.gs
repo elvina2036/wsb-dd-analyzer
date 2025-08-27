@@ -18,7 +18,7 @@ const SymbolsIndex = (() => {
       'CO','COMPANY','TRUST','FUND','ETF','CAPITAL','ACQUISITION','ACQUISITIONS','SPAC',
       'ENTERPRISES','INDUSTRIES','INDUSTRY','GROUP','SYSTEMS','SOFTWARE','TECH','TECHNOLOGY',
       'BIO','BIOSCIENCES','PHARMA','PHARMACEUTICALS','RESOURCES','LABS','LABORATORIES',
-      'CLASS','UNIT','UNITS','RIGHT','RIGHTS','WARRANT','WARRANTS'
+      'CLASS','UNIT','UNITS','RIGHT','RIGHTS','WARRANT','WARRANTS', 'CORP'
     ]);
 
     const up = s => (s || '').toString().trim().toUpperCase();
@@ -237,7 +237,7 @@ const Ticker = (() => {
     const title = front.getRange(row, (H['title'] || 3) + 1).getValue();
     const body = front.getRange(row, (H['post_content'] || 4) + 1).getValue();
     const tkr = extract(title, idx) || extractFallback(title, body, idx) || '(no match)';
-    SpreadsheetApp.getUi().alert('Title:\n'+title+'\n\nBody:\n'+body+'\n\nTicker: '+tkr);
+    Utils.Log.append('info', 'UI: '+String('Title:\n'+title+'\n\nBody:\n'+body+'\n\nTicker: '+tkr), '');
   }
 
   return { extract, extractFallback, testActiveRow };

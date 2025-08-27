@@ -67,7 +67,7 @@ function fmpFetchBatchRaw_(symbols) {
                 `?apikey=${encodeURIComponent(key)}`;
     let code = 0, payload = [];
     try {
-      const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+      const res = (function(){try{var __resp=UrlFetchApp.fetch(url, { muteHttpExceptions: true });return __resp;}catch(e){Utils.Log.append('error','UrlFetch fetch failed',''+e);throw e;}})();
       code = res.getResponseCode();
       payload = JSON.parse(res.getContentText() || '[]');
     } catch (e) {
@@ -211,7 +211,7 @@ function fetchAvDailySeries_(symbol, adjusted, outputsize) {
 
   let text = '';
   try {
-    const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true });
+    const res = (function(){try{var __resp=UrlFetchApp.fetch(url, { muteHttpExceptions: true });return __resp;}catch(e){Utils.Log.append('error','UrlFetch fetch failed',''+e);throw e;}})();
     text = res.getContentText() || '';
   } catch (e) {
     return { ok:false, why:`fetch error: ${e && e.message ? e.message : e}` };

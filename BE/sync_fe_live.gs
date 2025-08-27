@@ -198,7 +198,7 @@ const FELive = (() => {
 
       const url = base + '/stock/profile2?symbol=' + encodeURIComponent(tkr);
       try {
-        const res = UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true, headers });
+        const res = (function(){try{var __resp=UrlFetchApp.fetch(url, { muteHttpExceptions: true, followRedirects: true, headers });return __resp;}catch(e){Utils.Log.append('error','UrlFetch fetch failed',''+e);throw e;}})();
         if (res.getResponseCode() !== 200) { out.set(tkr, ''); continue; }
         const json = JSON.parse(res.getContentText());
 

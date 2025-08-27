@@ -109,7 +109,9 @@ const Direction = (() => {
       else if (upr <= 0.45) total -= 0.5;
     }
 
-    return total >= -0.5 ? 'Bull' : 'Bear';
+    if (total >= 0.75) return 'Bull';
+    if (total <= -0.75) return 'Bear';
+    return 'Neutral';
   }
 
   return { classify };

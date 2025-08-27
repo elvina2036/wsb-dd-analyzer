@@ -9,7 +9,7 @@ function httpFetch_(url, opts) {
   var attempt = 0;
   while (++attempt <= maxRetries) {
     try {
-      var res  = UrlFetchApp.fetch(url, fetchOpts);
+      var res  = (function(){try{var __resp=UrlFetchApp.fetch(url, fetchOpts);return __resp;}catch(e){Utils.Log.append('error','UrlFetch fetch failed',''+e);throw e;}})();
       var code = res.getResponseCode();
       if (code >= 200 && code < 300) {
         if (parseAs === 'json')  return JSON.parse(res.getContentText());

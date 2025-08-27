@@ -62,7 +62,7 @@ const Symbols = (() => {
     Utils.Sheets.sortByHeader(sh, 'symbol', { ascending: true });
     fixRowFormat(sh, 21);
 
-    SpreadsheetApp.getActive().toast(`Symbols: wrote ${data.length} rows`, 'WSB', 4);
+    Utils.Log.append('info', String(`Symbols: wrote ${data.length} rows`, 'WSB', 4), '');
   }
 
   return { fetchAndWrite };

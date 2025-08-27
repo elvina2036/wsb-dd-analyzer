@@ -32,6 +32,14 @@ function createTriggers() {
     { name: "sync_ticker_cache", hour: 19, minute: 50 },
     { name: "FELive_refreshChain", hour: 21, minute: 0 }
   ]);
+
+  // Nightly hygiene: purge invalid rows at 03:00
+  ScriptApp.newTrigger("cleanupInvalidRows")
+    .timeBased()
+    .atHour(3)
+    .nearMinute(0)
+    .everyDays(1)
+    .create();
 }
 
 // ---- Helper to add daily triggers ----
