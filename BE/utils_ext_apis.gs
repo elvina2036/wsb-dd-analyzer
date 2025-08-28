@@ -1,25 +1,22 @@
-/** ===================== utils_ext_apis.gs (DROP-IN) ===================== **/
-
-/* Core HTTP with retries/backoff + optional proxy fallback */
 function httpFetch_(url, opts) {
   opts = opts || {};
   var maxRetries = opts.maxRetries != null ? opts.maxRetries : 3;
   var backoffMs  = opts.backoffMs  != null ? opts.backoffMs  : 800;
-  var parseAs    = opts.parseAs    || 'text';   // 'json' | 'text' | 'bytes'
-  var fetchOpts  = opts.fetchOpts  || {};       // UrlFetch params
-  var tryProxy   = !!opts.tryProxy;             // whether this attempt is proxied
+  var parseAs    = opts.parseAs    || 'text';   
+  var fetchOpts  = opts.fetchOpts  || {};       
+  var tryProxy   = !!opts.tryProxy;             
 
   var attempt = 0;
   while (++attempt <= maxRetries) {
     try {
-      var res  = UrlFetchApp.fetch(url, fetchOpts);
+      var res  = (function(){try{var __resp=UrlFetchApp.fetch(url, fetchOpts);return __resp;}catch(e){Utils.Log.append('error','UrlFetch fetch failed',''+e);throw e;}})();
       var code = res.getResponseCode();
       if (code >= 200 && code < 300) {
         if (parseAs === 'json')  return JSON.parse(res.getContentText());
         if (parseAs === 'bytes') return res.getContent();
         return res.getContentText();
       }
-      // transient?
+
       var transient = (code === 408 || code === 429 || code === 500 || code === 502 || code === 503 || code === 504);
       if (transient && attempt < maxRetries) {
         Utilities.sleep(backoffMs * Math.pow(2, attempt - 1));
@@ -34,10 +31,8 @@ function httpFetch_(url, opts) {
   throw new Error('httpFetch_ failed: ' + url);
 }
 
-/* Proxy helper */
 function withProxy_(rawUrl) { return 'https://corsproxy.io/?' + encodeURIComponent(rawUrl); }
 
-/* Nasdaq symbol directory fetchers (text) */
 function fetchNasdaqListed_() {
   return httpFetch_(Config.SYMBOLS.NASDAQ_LISTED_URL, {
     parseAs: 'text',
@@ -51,7 +46,6 @@ function fetchOtherListed_() {
   });
 }
 
-/* Reddit search (JSON). Options: { q, subreddit, sort, limit, after, before, useProxy, useProxyFallback, raw_json, maxRetries, backoffMs } */
 function fetchRedditSearch_(p) {
   p = p || {};
   var sub  = p.subreddit || 'wallstreetbets';
